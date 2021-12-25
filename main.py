@@ -207,7 +207,6 @@ class Protein(tk.Frame):
         pseq_cs3.pack(pady = 5)
         pseq_frame1.pack_propagate(0)
         pseq_frame2.pack_propagate(0)
-        print(pseq_cs1.winfo_height())
 
 
     def getProtein(self):
