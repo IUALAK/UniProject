@@ -61,12 +61,15 @@ class DNA(tk.Frame):
     def createDNA(self):
         dna_frame = self.dna_frame
         generator = tk.Frame(dna_frame)
-        generator_button, generator_entry = [tk.Button(master = generator, text = 'generate', command = lambda: self.dna_treater(generator_entry)),
-         tk.Entry(master = generator,width=10)
+        generator_button, generator_entry, generator_label = [
+            tk.Button(generator, text = 'generate', command = lambda: self.dna_treater(generator_entry)),
+            tk.Entry(generator,width=10),
+            tk.Label(generator, text = 'length of the chain:')
          ]
         generator_entry.insert(0, '100')
         generator_button.pack(side = 'left')
         generator_entry.pack(side = 'right')
+        generator_label.pack(side = 'right')
         generator.pack(fill= 'x')
 
         oseq = tk.Frame(dna_frame)
@@ -200,10 +203,11 @@ class Protein(tk.Frame):
         pseq_rf3.pack()
         pseq_cs1 = tk.Radiobutton(pseq_frame2, text = '1', variable = self.cs_var, value= 1, command = lambda: self.getProtein())
         pseq_cs3 = tk.Radiobutton(pseq_frame2, text = '3', variable = self.cs_var, value= 3, command = lambda: self.getProtein())
-        pseq_cs1.pack()
-        pseq_cs3.pack()
+        pseq_cs1.pack(pady = 5)
+        pseq_cs3.pack(pady = 5)
         pseq_frame1.pack_propagate(0)
         pseq_frame2.pack_propagate(0)
+        print(pseq_cs1.winfo_height())
 
 
     def getProtein(self):
