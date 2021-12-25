@@ -3,36 +3,14 @@ from Bio import SeqIO
 import tkinter as tk
 import random
 import re
-
-dna_dictionary = ['A', 'T', 'G', 'C']
-dna_complementarity_dictionary = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
-dna_to_protein_dictionary = {
-    'TTT' : ('Phe', 'F'), 'TTC' : ('Phe', 'F'), 'TTA' : ('Leu', 'L'), 'TTG': ('Leu', 'L'),
-    'TCT' : ('Ser', 'S'), 'TCC' : ('Ser', 'S'), 'TCA' : ('Ser', 'S'), 'TCG': ('Ser', 'S'),
-    'TAT' : ('Tyr', 'Y'), 'TAC' : ('Tyr', 'Y'), 'TAA' : ('***', '*'), 'TAG': ('***', '*'),
-    'TGT' : ('Cys', 'C'), 'TGC' : ('Cys', 'C'), 'TGA' : ('***', '*'), 'TGG': ('Trp', 'W'),
-    'CTT' : ('Leu', 'L'), 'CTC' : ('Leu', 'L'), 'CTA' : ('Leu', 'L'), 'CTG': ('Leu', 'L'),
-    'CCT' : ('Pro', 'P'), 'CCC' : ('Pro', 'P'), 'CCA' : ('Pro', 'P'), 'CCG': ('Pro', 'P'),
-    'CAT' : ('His', 'H'), 'CAC' : ('His', 'H'), 'CAA' : ('Gln', 'Q'), 'CAG': ('Gln', 'Q'),
-    'CGT' : ('Arg', 'R'), 'CGC' : ('Arg', 'R'), 'CGA' : ('Arg', 'R'), 'CGG': ('Arg', 'R'),
-    'ATT' : ('Ile', 'I'), 'ATC' : ('Ile', 'I'), 'ATA' : ('Ile', 'I'), 'ATG': ('Met', 'M'),
-    'ACT' : ('Thr', 'T'), 'ACC' : ('Thr', 'T'), 'ACA' : ('Thr', 'T'), 'ACG': ('Thr', 'T'),
-    'AAT' : ('Asn', 'N'), 'AAC' : ('Asn', 'N'), 'AAA' : ('Lys', 'K'), 'AAG': ('Lys', 'K'),
-    'AGT' : ('Ser', 'S'), 'AGC' : ('Ser', 'S'), 'AGA' : ('Arg', 'R'), 'AGG': ('Arg', 'R'),
-    'GTT' : ('Val', 'V'), 'GTC' : ('Val', 'V'), 'GTA' : ('Val', 'V'), 'GTG': ('Val', 'V'),
-    'GCT' : ('Ala', 'A'), 'GCC' : ('Ala', 'A'), 'GCA' : ('Ala', 'A'), 'GCG': ('Ala', 'A'),
-    'GAT' : ('Asp', 'D'), 'GAC' : ('Asp', 'D'), 'GAA' : ('Glu', 'E'), 'GAG': ('Glu', 'E'),
-    'GGT' : ('Gly', 'G'), 'GGC' : ('Gly', 'G'), 'GGA' : ('Gly', 'G'), 'GGG': ('Gly', 'G'),
-}
-
-# Idea: Could I realize the combination of graphical and back fnc? So I'll obtain functional modules
+from settings import *
 
 class DNA(tk.Frame):
     # realize the cheking on the gui level
     # GUI part
     gcode = 0
-    text_height = 5
-    padx = 3
+    Protein = None
+    edna = None
 
     def __init__(self, master = None):
         tk.Frame.__init__(self, master)
@@ -45,8 +23,8 @@ class DNA(tk.Frame):
         self.dseq_var = tk.IntVar()
         self.createDNAderivatives()
         master.config(menu = self.menu)
-        self.dna_frame.pack(fill = "x", padx = self.padx)
-        self.dna_derivatives_frame.pack(fill = 'x', padx = self.padx)
+        self.dna_frame.pack(fill = "x", padx = common_padx)
+        self.dna_derivatives_frame.pack(fill = 'x', padx = common_padx)
 
     def call_code(self):
         def gcode_minus(self):
@@ -88,9 +66,11 @@ class DNA(tk.Frame):
 
         oseq = tk.Frame(dna_frame)
         oseq_label = tk.Label(oseq,text = 'Original DNA sequence')
-        oseq_text = tk.Text(oseq, height = self.text_height)
+        oseq_text = tk.Text(oseq, height = text_height)
+        oseq_text.bind("<Button-1>", lambda e: "break")
+        oseq_text.bind("<Key>", lambda e: "break")
         oseq_label.pack(side = 'top')
-        oseq_text.pack(side = 'top')
+        oseq_text.pack(side = 'top', pady = common_pady)
         oseq.pack(fill = 'x')
 
     def createDNAderivatives(self):
@@ -100,22 +80,27 @@ class DNA(tk.Frame):
         dseq_label = tk.Label(dseq_frame,text = 'Sequence DNA:')
         dseq_button_complementary = tk.Checkbutton(dseq_frame,text = 'Complementary', onvalue= 1, variable = self.dseq_var, command= lambda: self.dna_derivatives_treater(dseq_text))
         dseq_button_reverse = tk.Checkbutton(dseq_frame,text = 'Reverse', onvalue= 2, variable=self.dseq_var, command= lambda: self.dna_derivatives_treater(dseq_text))
-        dseq_text = tk.Text(dna_derivatives_frame, height=self.text_height)
+        dseq_text = tk.Text(dna_derivatives_frame, height=text_height)
+        dseq_text.bind("<Button-1>", lambda e: "break")
+        dseq_text.bind("<Key>", lambda e: "break")
         dseq_label.pack(side = 'left')
         dseq_button_reverse.pack(side = 'right')
         dseq_button_complementary.pack(side = 'right')
         dseq_frame.pack(fill = 'x')
-        dseq_text.pack(fill = 'x')
+        dseq_text.pack(fill = 'x', pady= common_pady)
 
 
     # functional part
     #TODO: adapt code under fasta function
-    def dna_treater(self,  entry, text):
-        dna_list = random.choices(dna_dictionary, k = int(entry.get()))  
-        self.initial_chain =  ''.join(dna_list)
-        # TODO: think about this part of the code, may be it's better to call them then needed?
-        text.delete('1.0', tk.END)
-        text.insert('1.0', self.initial_chain)
+    def dna_treater(self, entry, text):
+        try:
+            dna_list = random.choices(dna_dictionary, k = int(entry.get()))  
+            self.initial_chain =  ''.join(dna_list)
+            text.delete('1.0', tk.END)
+            text.insert('1.0', self.initial_chain)
+        except:
+            text.delete('1.0', tk.END)
+            text.insert('1.0', 'Wrong generation number given')
 
     def dna_derivatives_treater(self, text):
         if self.dseq_var.get() == 0:
@@ -132,8 +117,10 @@ class DNA(tk.Frame):
             cdna = ''  
             for i in dna:
                 cdna = cdna + dna_complementarity_dictionary[i]
+            self.edna = cdna[::-1]
             text.delete('1.0', tk.END)
-            text.insert('1.0',cdna[::-1])
+            text.insert('1.0', self.edna)
+            self.Protein.getProtein()
         except:
             text.delete('1.0', tk.END)
             text.insert('1.0', 'Initial chain is absent or wrong')
@@ -141,15 +128,16 @@ class DNA(tk.Frame):
     def generate_reverse_dna(self, text):
         try:
             dna = self.initial_chain
-            rdna = dna[::-1]
+            self.edna = dna[::-1]
             text.delete('1.0', tk.END)
-            text.insert('1.0', rdna)
+            text.insert('1.0', self.edna)
+            self.Protein.getProtein()
         except:
             text.delete('1.0', tk.END)
             text.insert('1.0', 'Initial chain is absent or wrong')
 
 class Protein(tk.Frame):
-    padx = 3
+    DNA = None
 
     def __init__(self, master):
         tk.Frame.__init__(self, master)
@@ -158,67 +146,77 @@ class Protein(tk.Frame):
         self.rf_var = tk.IntVar(value = 1)
         self.cs_var = tk.IntVar(value = 1)
         self.createProtein()
-        self.protein_frame.pack(fill = 'x', padx = self.padx)
+        self.protein_frame.pack(fill = 'x', padx = common_padx)
 
 
     def createProtein(self):
         protein_frame = self.protein_frame
         pset_frame = tk.Frame(protein_frame)
         pseq_label = tk.Label(pset_frame,text = 'Protein\nsequence')
-        frames_height, frames_width  = [55, 100]
+        frames_height, frames_width, frames_padx  = [55, 100, 2]
         pseq_frame1, pseq_frame2 = [
             tk.Frame(master = pset_frame, height = frames_height, width = frames_width, bd = 2, relief='groove'),
             tk.Frame(master = pset_frame, height = frames_height, width = frames_width, bd = 2, relief ='groove')
         ]
-        pseq_text = tk.Text(protein_frame,height= 5, width=65)
+        self.pseq_text = tk.Text(protein_frame,height= text_height)
+        self.pseq_text.bind("<Button-1>", lambda e: "break")
+        self.pseq_text.bind("<Key>", lambda e: "break")
         pseq_label.pack(side = 'left')
-        pseq_frame1.pack(side = 'right')
-        pseq_frame2.pack(side = 'right')
+        pseq_frame2.pack(side = 'right', padx= frames_padx)
+        pseq_frame1.pack(side = 'right', padx= frames_padx)
         rf_label = tk.Label(master = pseq_frame1, text = 'Reading\nframe')
         cs_label = tk.Label(master = pseq_frame2, text = 'AA Code\nLength ')
         rf_label.pack(side = 'left')
         cs_label.pack(side = 'left')
         pset_frame.pack(fill = 'x')
-        pseq_text.pack(fill = 'x')
+        self.pseq_text.pack(fill = 'x', pady= common_pady)
 
         # protein, buttons
-        pseq_rf1 = tk.Radiobutton(master = pseq_frame1,text = '1', variable= self.rf_var, value = 1)
-        pseq_rf2 = tk.Radiobutton(master = pseq_frame1,text = '2', variable= self.rf_var, value = 2)
-        pseq_rf3 = tk.Radiobutton(master = pseq_frame1,text = '3', variable= self.rf_var, value = 3)
+        pseq_rf2 = tk.Radiobutton(pseq_frame1,text = '2', variable= self.rf_var, value = 2, command = lambda: self.getProtein())
+        pseq_rf3 = tk.Radiobutton(pseq_frame1,text = '3', variable= self.rf_var, value = 3, command = lambda: self.getProtein())
+        pseq_rf1 = tk.Radiobutton(pseq_frame1,text = '1', variable= self.rf_var, value = 1, command = lambda: self.getProtein())
         pseq_rf1.pack()
         pseq_rf2.pack()
         pseq_rf3.pack()
-        pseq_cs1 = tk.Radiobutton(master = pseq_frame2, text = '1', variable = self.cs_var, value= 1)
-        pseq_cs3 = tk.Radiobutton(master = pseq_frame2, text = '3', variable = self.cs_var, value= 3)
+        pseq_cs1 = tk.Radiobutton(pseq_frame2, text = '1', variable = self.cs_var, value= 1, command = lambda: self.getProtein())
+        pseq_cs3 = tk.Radiobutton(pseq_frame2, text = '3', variable = self.cs_var, value= 3, command = lambda: self.getProtein())
         pseq_cs1.pack()
         pseq_cs3.pack()
         pseq_frame1.pack_propagate(0)
         pseq_frame2.pack_propagate(0)
 
 
-    def getProtein(self, dna, frame = 0, code = 3):
-        if code == 1:
-            code = 0
-        else:
-            code = 1
-        dna = dna[frame:]
-        protein  = []
-        dna = re.findall('...', dna)
-        for codon in dna:
-            if dna_to_protein_dictionary[codon][0] == '***':
-                break
-            protein.append(dna_to_protein_dictionary[codon][code])
-        self.protein_chain = ''.join(protein)
-
+    def getProtein(self):
+        frame, code, text = [self.rf_var.get(), self.cs_var.get(), self.pseq_text]
+        try:   
+            if code == 1:
+                code = 1
+            else:
+                code = 0
+            dna = self.DNA.edna[frame-1:]
+            protein  = []
+            dna = re.findall('...', dna)
+            for codon in dna:
+                if dna_to_protein_dictionary[codon][0] == '***':
+                    break
+                protein.append(dna_to_protein_dictionary[codon][code])
+            self.protein_chain = ''.join(protein)
+            text.delete('1.0', tk.END)
+            text.insert('1.0', self.protein_chain)
+        except:
+            text.delete('1.0', tk.END)
+            text.insert('1.0', 'Error')
 
 # tests
 if __name__ == '__main__':
     root = tk.Tk()
-    root.geometry('500x297')
+    root.geometry('502x315')
     root.resizable(0,0)
     root.title('Genetic code treater')
     DNA_frame = DNA(root)
     Protein_frame = Protein(root)
+    Protein_frame.DNA = DNA_frame
+    DNA_frame.Protein = Protein_frame
     DNA_frame.pack()
     Protein_frame.pack()
     
