@@ -1,9 +1,9 @@
-from itertools import chain
-from Bio import SeqIO
 import tkinter as tk
+from tkinter import filedialog
 import random
 import re
 from settings import *
+import fastareader as fasta
 
 class DNA(tk.Frame):
     # realize the cheking on the gui level
@@ -31,32 +31,37 @@ class DNA(tk.Frame):
             self.gcode = 0
             self.code_win.destroy()
         if self.gcode == 0:
-            self.code_win = tk.Toplevel(self.master)
+            self.code_win = tk.Toplevel(self)
             code_win = self.code_win
             code_win.title('Standard genetic code')
             code_win.resizable(0,0)
             code_label = tk.Label(code_win)
             code_label.image = tk.PhotoImage(file = './dna_code.png')
             code_label['image'] = code_label.image
-            code_label.pack()
             self.gcode = 1
+            code_label.pack()
             code_win.protocol("WM_DELETE_WINDOW", lambda: gcode_minus(self))
+        else:
+            gcode_minus(self)
+
 
     def createMenu(self):
 
         top_menubar = self.menu
         file_menu = tk.Menu(master = top_menubar, tearoff=0)
-        file_menu.add_command(label = 'Read fasta file')
+        file_menu.add_command(label = 'Read fasta file', command = lambda: self.browse_fasta())
         file_menu.add_separator()
         file_menu.add_command(label = 'Exit', command = self.master.quit)
 
         top_menubar.add_cascade(label = 'File', menu = file_menu)
         top_menubar.add_command(label = 'Tools', command = lambda: self.call_code())
 
+
+
     def createDNA(self):
         dna_frame = self.dna_frame
         generator = tk.Frame(dna_frame)
-        generator_button, generator_entry = [tk.Button(master = generator, text = 'generate', command = lambda: self.dna_treater(generator_entry, oseq_text)),
+        generator_button, generator_entry = [tk.Button(master = generator, text = 'generate', command = lambda: self.dna_treater(generator_entry)),
          tk.Entry(master = generator,width=10)
          ]
         generator_entry.insert(0, '100')
@@ -66,11 +71,11 @@ class DNA(tk.Frame):
 
         oseq = tk.Frame(dna_frame)
         oseq_label = tk.Label(oseq,text = 'Original DNA sequence')
-        oseq_text = tk.Text(oseq, height = text_height)
-        oseq_text.bind("<Button-1>", lambda e: "break")
-        oseq_text.bind("<Key>", lambda e: "break")
+        self.oseq_text = tk.Text(oseq, height = text_height)
+        self.oseq_text.bind("<Button-1>", lambda e: "break")
+        self.oseq_text.bind("<Key>", lambda e: "break")
         oseq_label.pack(side = 'top')
-        oseq_text.pack(side = 'top', pady = common_pady)
+        self.oseq_text.pack(side = 'top', pady = common_pady)
         oseq.pack(fill = 'x')
 
     def createDNAderivatives(self):
@@ -78,38 +83,54 @@ class DNA(tk.Frame):
 
         dseq_frame = tk.Frame(dna_derivatives_frame)
         dseq_label = tk.Label(dseq_frame,text = 'Sequence DNA:')
-        dseq_button_complementary = tk.Checkbutton(dseq_frame,text = 'Complementary', onvalue= 1, variable = self.dseq_var, command= lambda: self.dna_derivatives_treater(dseq_text))
-        dseq_button_reverse = tk.Checkbutton(dseq_frame,text = 'Reverse', onvalue= 2, variable=self.dseq_var, command= lambda: self.dna_derivatives_treater(dseq_text))
-        dseq_text = tk.Text(dna_derivatives_frame, height=text_height)
-        dseq_text.bind("<Button-1>", lambda e: "break")
-        dseq_text.bind("<Key>", lambda e: "break")
+        dseq_button_complementary = tk.Checkbutton(dseq_frame,text = 'Complementary', onvalue= 1, variable = self.dseq_var, command= lambda: self.dna_derivatives_treater())
+        dseq_button_reverse = tk.Checkbutton(dseq_frame,text = 'Reverse', onvalue= 2, variable=self.dseq_var, command= lambda: self.dna_derivatives_treater())
+        self.dseq_text = tk.Text(dna_derivatives_frame, height=text_height)
+        self.dseq_text.bind("<Button-1>", lambda e: "break")
+        self.dseq_text.bind("<Key>", lambda e: "break")
         dseq_label.pack(side = 'left')
         dseq_button_reverse.pack(side = 'right')
         dseq_button_complementary.pack(side = 'right')
         dseq_frame.pack(fill = 'x')
-        dseq_text.pack(fill = 'x', pady= common_pady)
+        self.dseq_text.pack(fill = 'x', pady= common_pady)
 
 
     # functional part
     #TODO: adapt code under fasta function
-    def dna_treater(self, entry, text):
+    def dna_treater(self, entry):
         try:
             dna_list = random.choices(dna_dictionary, k = int(entry.get()))  
             self.initial_chain =  ''.join(dna_list)
-            text.delete('1.0', tk.END)
-            text.insert('1.0', self.initial_chain)
+            self.oseq_text.delete('1.0', tk.END)
+            self.oseq_text.insert('1.0', self.initial_chain)
+            self.dna_derivatives_treater()
         except:
-            text.delete('1.0', tk.END)
-            text.insert('1.0', 'Wrong generation number given')
+            self.oseq_text.delete('1.0', tk.END)
+            self.oseq_text.insert('1.0', 'Wrong generation number given')
 
-    def dna_derivatives_treater(self, text):
+    def dna_derivatives_treater(self):
         if self.dseq_var.get() == 0:
-            text.delete('1.0', tk.END)
+            self.dseq_text.delete('1.0', tk.END)
+            self.edna = ''
+            self.Protein.getProtein()
         elif self.dseq_var.get() == 1:
-            self.generate_complementary_dna(text)
+            self.generate_complementary_dna(self.dseq_text)
         elif self.dseq_var.get() == 2:
-            self.generate_reverse_dna(text)
+            self.generate_reverse_dna(self.dseq_text)
 
+    def browse_fasta(self):
+        types = {    'filetypes': (('fasta', '.fasta'),
+                              ('fsta', '.fsta'),
+                              ('Text files', '.txt'),
+                              ('All files', '.*'),)}
+        types['title'] = 'Select a file to open...'
+        search_window = filedialog.askopenfilename(**types)
+        if len(search_window) > 0 :
+            self.initial_chain=fasta.fastaReader(search_window)
+            print(self.initial_chain)
+            self.oseq_text.delete('1.0', tk.END)
+            self.oseq_text.insert('1.0', self.initial_chain)
+            self.dna_derivatives_treater()
 
     def generate_complementary_dna(self, text):
         try:
