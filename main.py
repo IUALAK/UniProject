@@ -127,7 +127,6 @@ class DNA(tk.Frame):
         search_window = filedialog.askopenfilename(**types)
         if len(search_window) > 0 :
             self.initial_chain=fasta.fastaReader(search_window)
-            print(self.initial_chain)
             self.oseq_text.delete('1.0', tk.END)
             self.oseq_text.insert('1.0', self.initial_chain)
             self.dna_derivatives_treater()
