@@ -2,17 +2,25 @@ import tkinter as tk
 from tkinter import filedialog
 import random
 import re
-from settings import *
-import fastareader as fasta
+from src.settings import *
+import src.fastareader as fasta
 
 class DNA(tk.Frame):
-    # realize the cheking on the gui level
-    # GUI part
+    '''
+    Class includes all methods and attributes responsible for visualization and treatment of DNA and its derivatives. Also it responses menu elements
+    '''
+    # Attributes
+
     gcode = 0
     Protein = None
     edna = None
+    initial_chain = None
+    # GUI part
 
     def __init__(self, master = None):
+        '''
+        Gets master, creates GUI elements and call functions responsible for their setting
+        '''
         tk.Frame.__init__(self, master)
         self.master = master
         self.menu = tk.Menu(master)
@@ -20,13 +28,17 @@ class DNA(tk.Frame):
         self.dna_frame = tk.Frame(master)
         self.createDNA()
         self.dna_derivatives_frame = tk.Frame(master)
-        self.dseq_var = tk.IntVar()
+        self.cseq_var = tk.IntVar()
+        self.rseq_var = tk.IntVar()
         self.createDNAderivatives()
         master.config(menu = self.menu)
         self.dna_frame.pack(fill = "x", padx = common_padx)
         self.dna_derivatives_frame.pack(fill = 'x', padx = common_padx)
 
     def call_code(self):
+        '''
+        Creates and controls window containing table of codons
+        '''
         def gcode_minus(self):
             self.gcode = 0
             self.code_win.destroy()
@@ -46,7 +58,9 @@ class DNA(tk.Frame):
 
 
     def createMenu(self):
-
+        '''
+        Sets up the GUI elements of top menu
+        '''
         top_menubar = self.menu
         file_menu = tk.Menu(master = top_menubar, tearoff=0)
         file_menu.add_command(label = 'Read fasta file', command = lambda: self.browse_fasta())
@@ -59,18 +73,29 @@ class DNA(tk.Frame):
 
 
     def createDNA(self):
+        '''
+        Creates and controls GUI elements for initial DNA chain
+        '''
         dna_frame = self.dna_frame
         generator = tk.Frame(dna_frame)
+        oseq_counter = tk.Frame(generator)
         generator_button, generator_entry, generator_label = [
             tk.Button(generator, text = 'generate', command = lambda: self.dna_treater(generator_entry)),
             tk.Entry(generator,width=10),
             tk.Label(generator, text = 'length of the chain:')
          ]
+
         generator_entry.insert(0, '100')
         generator_button.pack(side = 'left')
-        generator_entry.pack(side = 'right')
-        generator_label.pack(side = 'right')
+        generator_label.pack(side = 'left')
+        generator_entry.pack(side = 'left')
+        oseq_counter.pack(side = 'right')
         generator.pack(fill= 'x')
+        self.nuc_counter = tk.Label(oseq_counter, text = 'A: 100... T: 100...\n\nC: 100... G: 100...')
+        self.nuc_counter.pack()
+ 
+        # creating counter
+
 
         oseq = tk.Frame(dna_frame)
         oseq_label = tk.Label(oseq,text = 'Original DNA sequence')
@@ -81,13 +106,33 @@ class DNA(tk.Frame):
         self.oseq_text.pack(side = 'top', pady = common_pady)
         oseq.pack(fill = 'x')
 
+
+    def countNucleotides(self):
+        pass
+        nuc_table = []
+        for i in ('A', 'T', 'C', 'G'):
+            text = str(self.oseq_text.get("0.0",tk.END).count(i)) + '   '
+            if len(text) > 6:
+                text = text[:3] + '...'
+            else:
+                text = text + ' '*(6-len(text))
+            nuc_table.append(text)
+
+        self.nuc_counter.config(text = f'A: {nuc_table[0]} T: {nuc_table[1]}\n\nC: {nuc_table[2]} G: {nuc_table[3]}')
+        
+
+
+
     def createDNAderivatives(self):
+        '''
+        Creates and controls GUI elements for initial chain's derivatives
+        '''
         dna_derivatives_frame = self.dna_derivatives_frame
 
         dseq_frame = tk.Frame(dna_derivatives_frame)
         dseq_label = tk.Label(dseq_frame,text = 'Sequence DNA:')
-        dseq_button_complementary = tk.Checkbutton(dseq_frame,text = 'Complementary', onvalue= 1, variable = self.dseq_var, command= lambda: self.dna_derivatives_treater())
-        dseq_button_reverse = tk.Checkbutton(dseq_frame,text = 'Reverse', onvalue= 2, variable=self.dseq_var, command= lambda: self.dna_derivatives_treater())
+        dseq_button_complementary = tk.Checkbutton(dseq_frame,text = 'Complementary', onvalue = 1, variable = self.cseq_var, command= lambda: self.dna_derivatives_treater())
+        dseq_button_reverse = tk.Checkbutton(dseq_frame,text = 'Reverse', onvalue = 1, variable=self.rseq_var, command= lambda: self.dna_derivatives_treater())
         self.dseq_text = tk.Text(dna_derivatives_frame, height=text_height)
         self.dseq_text.bind("<Button-1>", lambda e: "break")
         self.dseq_text.bind("<Key>", lambda e: "break")
@@ -99,29 +144,42 @@ class DNA(tk.Frame):
 
 
     # functional part
-    #TODO: adapt code under fasta function
+
     def dna_treater(self, entry):
+        '''
+        Generates DNA initial chain and calls function responsible for generation of derivatives
+        '''
         try:
             dna_list = random.choices(dna_dictionary, k = int(entry.get()))  
             self.initial_chain =  ''.join(dna_list)
             self.oseq_text.delete('1.0', tk.END)
             self.oseq_text.insert('1.0', self.initial_chain)
+            self.countNucleotides()
             self.dna_derivatives_treater()
         except:
+            self.initial_chain = ''
             self.oseq_text.delete('1.0', tk.END)
             self.oseq_text.insert('1.0', 'Wrong generation number given')
+            self.countNucleotides()
+            self.dna_derivatives_treater()
 
     def dna_derivatives_treater(self):
-        if self.dseq_var.get() == 0:
+        '''
+        Controls which derivative will be generated and shown
+        '''
+        if self.cseq_var.get() == 1:
+            self.generate_complementary_dna()
+        elif self.rseq_var.get() == 1:
+            self.generate_reverse_dna()
+        else:
             self.dseq_text.delete('1.0', tk.END)
             self.edna = ''
             self.Protein.getProtein()
-        elif self.dseq_var.get() == 1:
-            self.generate_complementary_dna(self.dseq_text)
-        elif self.dseq_var.get() == 2:
-            self.generate_reverse_dna(self.dseq_text)
 
     def browse_fasta(self):
+        '''
+        Permits to browse files in order to find a fasta file
+        '''
         types = {    'filetypes': (('fasta', '.fasta'),
                               ('fsta', '.fsta'),
                               ('Text files', '.txt'),
@@ -132,37 +190,57 @@ class DNA(tk.Frame):
             self.initial_chain=fasta.fastaReader(search_window)
             self.oseq_text.delete('1.0', tk.END)
             self.oseq_text.insert('1.0', self.initial_chain)
+            self.countNucleotides()
             self.dna_derivatives_treater()
 
-    def generate_complementary_dna(self, text):
+    def generate_complementary_dna(self):
+        '''
+        Generates and shows complementary derivative of initial DNA chain
+        '''
         try:
-            dna = self.initial_chain
+            if self.rseq_var.get() == 0:
+                dna = self.initial_chain
+            else:
+                dna = self.initial_chain[::-1]
             cdna = ''  
             for i in dna:
                 cdna = cdna + dna_complementarity_dictionary[i]
-            self.edna = cdna[::-1]
-            text.delete('1.0', tk.END)
-            text.insert('1.0', self.edna)
+            self.edna = cdna
+            self.dseq_text.delete('1.0', tk.END)
+            self.dseq_text.insert('1.0', self.edna)
             self.Protein.getProtein()
         except:
-            text.delete('1.0', tk.END)
-            text.insert('1.0', 'Initial chain is absent or wrong')
+            self.dseq_text.delete('1.0', tk.END)
+            self.dseq_text.insert('1.0', 'Initial chain is absent or wrong')
+            self.Protein.getProtein()
 
-    def generate_reverse_dna(self, text):
+    def generate_reverse_dna(self):
+        '''
+        Generates and shows reverse derivative of initial DNA chain
+        '''
         try:
             dna = self.initial_chain
             self.edna = dna[::-1]
-            text.delete('1.0', tk.END)
-            text.insert('1.0', self.edna)
+            self.dseq_text.delete('1.0', tk.END)
+            self.dseq_text.insert('1.0', self.edna)
             self.Protein.getProtein()
         except:
-            text.delete('1.0', tk.END)
-            text.insert('1.0', 'Initial chain is absent or wrong')
+            self.dseq_text.delete('1.0', tk.END)
+            self.dseq_text.insert('1.0', 'Initial chain is absent or wrong')
+            self.Protein.getProtein()
 
 class Protein(tk.Frame):
+    '''
+    Class includes all methods and arguments needed to visualize and treat protein sequence within an application
+    '''
     DNA = None
 
+    # GUI part
+
     def __init__(self, master):
+        '''
+        Gets master, creates GUI elements and call functions responsible for their setting
+        '''        
         tk.Frame.__init__(self, master)
         self.master = master
         self.protein_frame = tk.Frame(master)
@@ -173,6 +251,9 @@ class Protein(tk.Frame):
 
 
     def createProtein(self):
+        '''
+        Generates GUI elements for protein
+        '''
         protein_frame = self.protein_frame
         pset_frame = tk.Frame(protein_frame)
         pseq_label = tk.Label(pset_frame,text = 'Protein\nsequence')
@@ -194,7 +275,7 @@ class Protein(tk.Frame):
         pset_frame.pack(fill = 'x')
         self.pseq_text.pack(fill = 'x', pady= common_pady)
 
-        # protein, buttons
+        # Buttons
         pseq_rf2 = tk.Radiobutton(pseq_frame1,text = '2', variable= self.rf_var, value = 2, command = lambda: self.getProtein())
         pseq_rf3 = tk.Radiobutton(pseq_frame1,text = '3', variable= self.rf_var, value = 3, command = lambda: self.getProtein())
         pseq_rf1 = tk.Radiobutton(pseq_frame1,text = '1', variable= self.rf_var, value = 1, command = lambda: self.getProtein())
@@ -208,9 +289,17 @@ class Protein(tk.Frame):
         pseq_frame1.pack_propagate(0)
         pseq_frame2.pack_propagate(0)
 
+    # functional part
 
     def getProtein(self):
+        '''
+        Generates a sequence of amino acids respecting the derivative DNA chain of given DNA class instance
+        '''
         frame, code, text = [self.rf_var.get(), self.cs_var.get(), self.pseq_text]
+        if self.DNA.initial_chain == None:
+            text.delete('1.0', tk.END)
+            text.insert('1.0', 'Error')
+            return 
         try:   
             if code == 1:
                 code = 1
@@ -230,11 +319,11 @@ class Protein(tk.Frame):
             text.delete('1.0', tk.END)
             text.insert('1.0', 'Error')
 
-# tests
+
 if __name__ == '__main__':
     root = tk.Tk()
-    root.geometry('502x315')
-    root.resizable(0,0)
+    # root.geometry('502x315')
+    # root.resizable(0,0)
     root.title('Genetic code treater')
     DNA_frame = DNA(root)
     Protein_frame = Protein(root)
@@ -244,10 +333,8 @@ if __name__ == '__main__':
     Protein_frame.pack()
     
     # to check the geometry
-    # root.update()
-    # print(root.winfo_height())
-    # print(root.winfo_width())
-
-    # root.bind_all("<<NewDNA>>", affiche)
+    root.update()
+    print(root.winfo_height())
+    print(root.winfo_width())
 
     root.mainloop()

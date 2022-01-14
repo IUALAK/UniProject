@@ -1,4 +1,5 @@
 def fastaReader(name):
+    # read the files in fasta format and return string
     with open(name, "r") as f:
         line=f.readline()       # skip first
         seq=f.readline()[:-1]   # initialize with the first sequence line
