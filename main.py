@@ -108,6 +108,9 @@ class DNA(tk.Frame):
 
 
     def countNucleotides(self):
+        '''
+        Counts the quantity of each nucleotide in initial DNA chain
+        '''
         pass
         nuc_table = []
         for i in ('A', 'T', 'C', 'G'):
