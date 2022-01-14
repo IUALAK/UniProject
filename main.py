@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import scrolledtext as st
 import random
 import re
 from src.settings import *
@@ -91,7 +92,7 @@ class DNA(tk.Frame):
         generator_entry.pack(side = 'left')
         oseq_counter.pack(side = 'right')
         generator.pack(fill= 'x')
-        self.nuc_counter = tk.Label(oseq_counter, text = 'A: 100... T: 100...\n\nC: 100... G: 100...')
+        self.nuc_counter = tk.Label(oseq_counter, text = 'A: 0     T: 0     \n\nC: 0     G: 0     ')
         self.nuc_counter.pack()
  
         # creating counter
@@ -99,7 +100,7 @@ class DNA(tk.Frame):
 
         oseq = tk.Frame(dna_frame)
         oseq_label = tk.Label(oseq,text = 'Original DNA sequence')
-        self.oseq_text = tk.Text(oseq, height = text_height)
+        self.oseq_text = st.ScrolledText(oseq, height = text_height)
         self.oseq_text.bind("<Button-1>", lambda e: "break")
         self.oseq_text.bind("<Key>", lambda e: "break")
         oseq_label.pack(side = 'top')
@@ -136,7 +137,7 @@ class DNA(tk.Frame):
         dseq_label = tk.Label(dseq_frame,text = 'Sequence DNA:')
         dseq_button_complementary = tk.Checkbutton(dseq_frame,text = 'Complementary', onvalue = 1, variable = self.cseq_var, command= lambda: self.dna_derivatives_treater())
         dseq_button_reverse = tk.Checkbutton(dseq_frame,text = 'Reverse', onvalue = 1, variable=self.rseq_var, command= lambda: self.dna_derivatives_treater())
-        self.dseq_text = tk.Text(dna_derivatives_frame, height=text_height)
+        self.dseq_text = st.ScrolledText(dna_derivatives_frame, height=text_height)
         self.dseq_text.bind("<Button-1>", lambda e: "break")
         self.dseq_text.bind("<Key>", lambda e: "break")
         dseq_label.pack(side = 'left')
@@ -265,7 +266,7 @@ class Protein(tk.Frame):
             tk.Frame(master = pset_frame, height = frames_height, width = frames_width, bd = 2, relief='groove'),
             tk.Frame(master = pset_frame, height = frames_height, width = frames_width, bd = 2, relief ='groove')
         ]
-        self.pseq_text = tk.Text(protein_frame,height= text_height)
+        self.pseq_text = st.ScrolledText(protein_frame,height= text_height)
         self.pseq_text.bind("<Button-1>", lambda e: "break")
         self.pseq_text.bind("<Key>", lambda e: "break")
         pseq_label.pack(side = 'left')
