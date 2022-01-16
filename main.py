@@ -49,7 +49,7 @@ class DNA(tk.Frame):
             code_win.title('Standard genetic code')
             code_win.resizable(0,0)
             code_label = tk.Label(code_win)
-            code_label.image = tk.PhotoImage(file = './dna_code.png')
+            code_label.image = tk.PhotoImage(file = './src/dna_code.png')
             code_label['image'] = code_label.image
             self.gcode = 1
             code_label.pack()
@@ -326,7 +326,7 @@ class Protein(tk.Frame):
 
 if __name__ == '__main__':
     root = tk.Tk()
-    root.geometry('327x585')
+    root.geometry('585x327')
     root.resizable(0,0)
     root.title('Genetic code treater')
     DNA_frame = DNA(root)
