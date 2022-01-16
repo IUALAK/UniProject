@@ -326,8 +326,8 @@ class Protein(tk.Frame):
 
 if __name__ == '__main__':
     root = tk.Tk()
-    # root.geometry('502x315')
-    # root.resizable(0,0)
+    root.geometry('327x585')
+    root.resizable(0,0)
     root.title('Genetic code treater')
     DNA_frame = DNA(root)
     Protein_frame = Protein(root)
@@ -336,9 +336,9 @@ if __name__ == '__main__':
     DNA_frame.pack()
     Protein_frame.pack()
     
-    # to check the geometry
-    root.update()
-    print(root.winfo_height())
-    print(root.winfo_width())
+    # to check the geometry if needed
+    # root.update()
+    # print(root.winfo_height())
+    # print(root.winfo_width())
 
     root.mainloop()
